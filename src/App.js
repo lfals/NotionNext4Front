@@ -5,7 +5,7 @@ import Select from 'react-select';
 import { SiNotion } from 'react-icons/si'
 import { AiFillQuestionCircle, AiOutlineQuestion, AiOutlineQuestionCircle } from 'react-icons/ai'
 import { BsFillQuestionCircleFill } from 'react-icons/bs'
-import { Data } from '@mui/material';
+import { Data, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
 
@@ -20,6 +20,9 @@ function App() {
   const [selectedOption, setSelectedOption] = useState(null);
   
   const [sumHour, setSumHour] = useState(0)
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [options, setOptions] = useState(baseOptionsValue)
   const [data, setData] = useState([
     {Cliente: '', Mês: '', "": '#', Horas: '', Descriçâo: ''}
@@ -150,67 +153,86 @@ function App() {
 
   }
 
+  const rows = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'firstName', headerName: 'First name', width: 130 },
+    { field: 'lastName', headerName: 'Last name', width: 130 },
+    {
+      field: 'age',
+      headerName: 'Age',
+      type: 'number',
+      width: 90,
+    },
+    {
+      field: 'fullName',
+      headerName: 'Full name',
+      description: 'This column has a value getter and is not sortable.',
+      sortable: false,
+      width: 160,
+      valueGetter: (params) =>
+        `${params.getValue(params.id, 'firstName') || ''} ${
+          params.getValue(params.id, 'lastName') || ''
+        }`,
+    },
+  ]
+
 
   return (
     <>
 
-<div className='navbar sans'>
+        <div className='navbar sans'>
 
-<a className='how'>
-        Como usar <BsFillQuestionCircleFill/>
-    </a>
+            <a className='how'>
+                Como usar <BsFillQuestionCircleFill/>
+            </a>
 
-    <a href="https://www.notion.so/32973b3d397c4f1292da0f641908283a?v=26d0ae7fd930488db76ff7a56de7a5dc" target="_blank" rel="noreferrer" className='no-print'>
-        <SiNotion />
-        Abrir no Notion
-    </a>
-    
-</div>
-    <article id="f0057d27-2408-477e-b446-21facb209a4a" className="page sans">
-          
-    <header>
-          
-        <h1 className="page-title">Suporte Next4</h1>
-
-        <div className="search-field no-print">
-        <Select
-        placeholder="Selecione o tipo de busca"
-        value={selectedOption} // set selected value
-        options={options} // set list of the data
-        onChange={handleChange} // assign onChange function
-        isMulti
-
-      />
-
-
-            <button onClick={() => {window.print()}}>Exportar</button>
-           
+            <a href="https://www.notion.so/32973b3d397c4f1292da0f641908283a?v=26d0ae7fd930488db76ff7a56de7a5dc" target="_blank" rel="noreferrer" className='no-print'>
+                <SiNotion />
+                Abrir no Notion
+            </a>
+            
         </div>
+            
+        <header className='sans'>
+            
+            <h1 className="page-title">Suporte Next4</h1>
+            <div className="search-field no-print">
+                <Select
+                    placeholder="Selecione o tipo de busca"
+                    value={selectedOption} // set selected value
+                    options={options} // set list of the data
+                    onChange={handleChange} // assign onChange function
+                    isMulti
+                />
+                <button onClick={() => {window.print()}}>Exportar</button>
+            </div>
             <h1 className="page-subtitle">{sumHour ? `Somatória das horas = ${sumHour}h` : ""}</h1>
-      
-    </header>
-    <div className="page-body">
-        <table className="collection-content">
-            <thead>
-                <tr>
-                    <th onClick={() => {}}>Cliente</th>
-                    <th>Mês</th>
-                    <th>Data</th>
-                    <th>Tipo</th>
-                    <th>Exec</th>
-                    <th>Ticket</th>
-                    <th>Previsão</th>
-                    <th>horas</th>
-                    <th>Descrição</th>
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((ticket, i) => objectRow(ticket, i))}
-            </tbody>
-        </table>
-    </div>
-</article>
-</>
+        
+        </header>
+
+        <div className="page-body sans">
+             <Table  className="collection-content">
+                <TableHead>
+                    <TableRow>
+                        <TableCell >Cliente</TableCell>
+                        <TableCell>Mês</TableCell>
+                        <TableCell>Data</TableCell>
+                        <TableCell>Tipo</TableCell>
+                        <TableCell>Exec</TableCell>
+                        <TableCell>Ticket</TableCell>
+                        <TableCell>Previsão</TableCell>
+                        <TableCell>horas</TableCell>
+                        <TableCell>Descrição</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {data.map((ticket, i) => objectRow(ticket, i))}
+                </TableBody>
+            </Table >
+       
+        </div>
+        
+    </>
   );
 }
 
