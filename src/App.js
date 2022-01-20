@@ -3,46 +3,93 @@ import { useEffect, useState } from 'react';
 import { objectRow } from './components/object.row';
 import Select from 'react-select';
 import { SiNotion } from 'react-icons/si'
-import { AiFillQuestionCircle, AiOutlineQuestion, AiOutlineQuestionCircle } from 'react-icons/ai'
 import { BsFillQuestionCircleFill } from 'react-icons/bs'
-import { Data, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
 
-
-const baseOptionsValue = [
-  { value: 'month', label: 'Mês' },
-  { value: 'client', label: 'Cliente' }
-]
-
 function App() {
 
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedClientOption, setSelectedClientOption] = useState(null);
+  const [selectedYearOption, setSelectedYearOption] = useState(null);
   
   const [sumHour, setSumHour] = useState(0)
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [options, setOptions] = useState(baseOptionsValue)
-  const [data, setData] = useState([
-    {Cliente: '', Mês: '', "": '#', Horas: '', Descriçâo: ''}
-  ])
+  const [clientsSelectOption, setClientsOption] = useState({})
+  const [monthsSelectOptions, setMonthsOptions] = useState({})
+  const [yearOptions, setYearOptions] = useState({})
+
+  const [initialData, setInitialData] = useState([])
+  const [filteredData, setFilteredData] = useState([])
+const [clientData, setClientData] = useState([])
+
+
+  const [year, setYear] = useState(new Date().getFullYear())
+  const [data, setData] = useState([])
 
 
   const setBaseData = () => {
+
     axios.get('https://notion-next4-lfals.vercel.app/tickets').then(result => {
-        setData(result.data)
+
+
+        setInitialData(result.data)
+        getYear(result.data)
+        getMonths(result.data)
+
       })
-   
+      return true
   }
 
   useEffect(()=>{
     setBaseData()
   },[])
 
+  const filterByYear =  (clientYear, data) => {
+    const filteredClients = []
+    let defaultValue = 0.0
+    data.forEach(element => {
+       
+          const clientData = new Date(element.date).getFullYear()
+            if (clientData === clientYear) {
+                const fixHour = parseFloat(element.hours.replace('', 0).replace("h", '').replace(",","."))
+                defaultValue+=fixHour
+                console.log("defaiuot", defaultValue);
+                filteredClients.push(element)
+            }
+    })
+
+        setSumHour(defaultValue);
+        setData(filteredClients)
+  }
+
+  const getYear = (data) => {
+    const dateArray = []
+    const filteredYearOptions = []
+    data.forEach(element => {
+        const year = new Date(element.date).getFullYear()
+        dateArray.push(year)
+    })
+    const filteredDateArray = dateArray.filter((item, index) => {
+        return  dateArray.indexOf(item) === index
+    })
+
+    filteredDateArray.forEach(year => {
+        filteredYearOptions.push(
+            {value: year, label: year}
+        )
+    })
+    console.log("Date Array", filteredDateArray);
+
+    setYearOptions(filteredYearOptions)
+    filterByYear(year,data)
+      
+  }
+
+
   const getMonths = (data) => {
     const MonthsArray = []
-    const monthsOptions = []
+    const filteredMonthsOptions = []
     data.forEach(element => {
         MonthsArray.push(element.month)
     });
@@ -51,20 +98,19 @@ function App() {
     })
 
     filteredMonthArray.forEach(month => {
-        monthsOptions.push(
+        filteredMonthsOptions.push(
             {value: month, label: month}
             )
     })
 
-    return monthsOptions
-  }
+    setMonthsOptions(filteredMonthsOptions)
+  } 
 
   const getCLients = (data) => {
 
         const clientsArray = []
-        const clientsOptions = []
+        const filteredClientsOptions = []
         data.forEach(element => {
-            
             clientsArray.push(element.client)
         })
 
@@ -73,22 +119,19 @@ function App() {
         })
 
         filteredClientArray.forEach(client => {
-            clientsOptions.push(
+            filteredClientsOptions.push(
                 {value: client, label: client, type: "client"}
             )
         })
         
-        return clientsOptions
+        setClientsOption(filteredClientsOptions)
   }
 
   const getCompanybyMonth = (data, month) => {
       const companyArray = []
-      let sumHour = 0.0
       data.forEach(element => {
-          if (element.month === month) {
-              const fixHour = parseFloat(element.hours.replace("h", '').replace(",","."))
-              sumHour+=fixHour
-              setSumHour(sumHour);
+          if (element.month === month.value) {
+           
               companyArray.push(element)
           }
       })
@@ -97,9 +140,10 @@ function App() {
   }
 
   const getClientOption = (data, client) => {
+    setSelectedYearOption(null)
       const companyArray = []
       data.forEach(element => {
-        if (element.client === client) {
+        if (element.client === client.value) {
             companyArray.push(element)
         }
       })
@@ -107,75 +151,36 @@ function App() {
       return companyArray
     }
 
-
-  const handleChange = (content, event) => {
-    if (event.action === "select-option") {
-        if (content[0].value === "month") {
-            setSelectedOption(content);
-            const monthsOptions = getMonths(data)
-            setOptions(monthsOptions)
-
-           if (content[1]) {
-               const filteredData = getCompanybyMonth(data, content[1].value)
-               setData(filteredData)
-           }
-        }
-
-        if (content[0].value === "client") {
-            setSelectedOption(content);
-            const clientsOption = getCLients(data)
-            setOptions(clientsOption)
-
-            if (content[1]) {
-                const filteredData = getClientOption(data, content[1].value)
-                setData(filteredData)
-                const filteredMonths = getMonths(filteredData)
-                setOptions(filteredMonths)
-
-                if (content[2]) {
-                    const filteredData = getCompanybyMonth(data, content[2].value)
-                    setData(filteredData)
-                    console.log(selectedOption);
-
-                }
-            }
-        }
-        
-    }
-
-    if (event.action === "clear") {
-        setBaseData()
-        setOptions(baseOptionsValue)
-        setSelectedOption(content);
-        setSumHour(0);
-    }
-
-
+  const handleMonth = (content) => {
+    setSelectedYearOption(null)
+    setSelectedClientOption(null)
+    
+    const client = getCompanybyMonth(initialData, content)
+    console.log(client);
+    filterByYear(year, client)
+    getCLients(client)
+    setFilteredData(client)
   }
 
-  const rows = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'firstName', headerName: 'First name', width: 130 },
-    { field: 'lastName', headerName: 'Last name', width: 130 },
-    {
-      field: 'age',
-      headerName: 'Age',
-      type: 'number',
-      width: 90,
-    },
-    {
-      field: 'fullName',
-      headerName: 'Full name',
-      description: 'This column has a value getter and is not sortable.',
-      sortable: false,
-      width: 160,
-      valueGetter: (params) =>
-        `${params.getValue(params.id, 'firstName') || ''} ${
-          params.getValue(params.id, 'lastName') || ''
-        }`,
-    },
-  ]
+  const handleClient = async (content) => {
+    setSelectedClientOption(content)
+    setSelectedYearOption(null)
+        const clients = getClientOption(filteredData, content)
+        
+        getYear(clients)
+        // setData(clients)
+        setClientData(clients)
+        filterByYear(year, clients)
+}
 
+const handleYear = (content) => {
+    setSelectedYearOption(content)
+    console.log(clientData);
+    const year = content.value
+    filterByYear(year, clientData)
+    
+
+}
 
   return (
     <>
@@ -197,20 +202,35 @@ function App() {
             
             <h1 className="page-title">Suporte Next4</h1>
             <div className="search-field no-print">
-                <Select
-                    placeholder="Selecione o tipo de busca"
-                    value={selectedOption} // set selected value
-                    options={options} // set list of the data
-                    onChange={handleChange} // assign onChange function
-                    isMulti
-                />
-                <button onClick={() => {window.print()}}>Exportar</button>
+                <div className='dropdown'>
+                    <Select
+                        placeholder="Selecione o mês"
+                        options={monthsSelectOptions} // set list of the data
+                        onChange={handleMonth} // assign onChange function
+
+                    />
+                    <Select
+                        value={selectedClientOption}
+                        placeholder="Selecione o cliente"
+                        options={clientsSelectOption} // set list of the data
+                        onChange={handleClient} // assign onChange function
+                    />
+                    <Select
+                        value={selectedYearOption}
+                        placeholder="Selecione o ano"
+                        options={yearOptions} // set list of the data
+                        onChange={handleYear} // assign onChange function
+                    />
+                </div>
+                    <button onClick={() => {window.print()}}>Exportar</button>
+                    
             </div>
             <h1 className="page-subtitle">{sumHour ? `Somatória das horas = ${sumHour}h` : ""}</h1>
         
         </header>
 
         <div className="page-body sans">
+                  
              <Table  className="collection-content">
                 <TableHead>
                     <TableRow>
