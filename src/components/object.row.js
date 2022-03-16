@@ -6,6 +6,7 @@ export const objectRow = (items, i) => {
             <TableRow key={i}>
                     <TableCell className="cell-`=Ik"><span className="selected-value select-value-color-pink">{items.client}</span></TableCell>
                     <TableCell className="cell-dAxx"><span className="selected-value select-value-color-green">{items.month}</span></TableCell>
+                    <TableCell className="cell-dAxx"><span className="selected-value select-value-color-green">{items.payment}</span></TableCell>
                     <TableCell className="cell-dAxx"><span className="selected-value select-value-color-orange">{items.date}</span></TableCell>
                     <TableCell className="cell-dAxx"><span className="selected-value select-value-color-yellow">{items.type}</span></TableCell>
                     <TableCell className="cell-dAxx"><span className="selected-value select-value-color-purple">{items.exec}</span></TableCell>

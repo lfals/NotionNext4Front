@@ -239,6 +239,7 @@ function App() {
             <TableRow>
               <TableCell>Cliente</TableCell>
               <TableCell>Mês</TableCell>
+              <TableCell>Status pgto</TableCell>
               <TableCell>Data</TableCell>
               <TableCell>Tipo</TableCell>
               <TableCell>Exec</TableCell>
